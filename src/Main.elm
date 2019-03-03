@@ -2,6 +2,7 @@ module Main exposing (main)
 
 import Browser
 import Html exposing (..)
+import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
 -- MAIN
@@ -15,31 +16,46 @@ main =
 
 -- MODEL
 type alias Model =
-    Int
+    { input : String
+    , todos : List String -- todoの内容
+    }
 
 init : Model
 init =
-    0
+    { input = ""
+    , todos = []
+    }
 
 -- UPDATE
 type Msg
-    = Increment
-    | Decrement
+    = Input String
+    | Stock
 
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        Increment ->
-            model + 1
+        Input newInput ->
+            { model | input = newInput }
 
-        Decrement ->
-            model - 1
+        Stock ->
+            { model
+                | input = ""
+                , todos = model.input :: model.todos
+            }
 
 -- VIEW
 view : Model -> Html Msg
 view model =
     div []
-        [ button [ onClick Decrement ] [ text "-" ]
-        , div [] [ text (String.fromInt model) ]
-        , button [ onClick Increment ] [ text "+" ]
+        [ Html.form [onSubmit Stock]
+            [ input [ value model.input, onInput Input ] []
+            , button
+                [ disabled (String.length model.input < 1) ]
+                [ text "Submit" ]
+            ]
+        , ul [] (List.map viewTodo model.todos)
         ]
+
+viewTodo : String -> Html msg
+viewTodo todo =
+    li [] [ text todo ]
